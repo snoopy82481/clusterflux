@@ -1,8 +1,8 @@
 ---
 name: Feature request
 description: Suggest an idea for this project
-title: "[Feature Request] <title>"
-labels: [Feature Request]
+title: "[ENHANCEMENT] <title>"
+labels: [enhancement]
 assignees: "snoopy82481"
 body:
   - type: checkboxes
@@ -15,18 +15,18 @@ body:
   - type: textarea
     attributes:
       label: Description
-      description: Describe the feature request in detail, including its purpose, benefits, and any specific requirements or constraints.
+      description: Describe the enhancement or feature request in detail, including the problem it solves or the value it adds.
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Use Cases
-      description: Explain the use cases or scenarios in which this feature would be valuable.
+      label: Proposal
+      description: Present a clear proposal for the enhancement, outlining the expected behavior and any implementation details if available.
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Implementation
-      description: If you have any suggestions or ideas regarding the implementation of the feature, provide them in this section.
+      label: Alternatives
+      description:  If applicable, suggest alternative solutions or approaches for achieving the desired outcome.
     validations:
-      required: true
+      required: false
