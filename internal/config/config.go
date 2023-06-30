@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/snoopy82481/clusterflux/internal/install"
 	"github.com/snoopy82481/clusterflux/internal/logger"
+	"github.com/thlib/go-timezone-local/tzlocal"
 )
 
 func CreateConfig() (Config, error) {
@@ -20,17 +20,24 @@ func CreateConfig() (Config, error) {
 		return Config{}, err
 	}
 
-	cloudflaredOutput, err := getCloudflareCreds()
+	cloudflared, err := getCloudflareCreds()
 	if err != nil {
 		logger.LogError("Unable to get clouldflard creds", err)
+		return Config{}, err
+	}
+
+	tzname, err := tzlocal.RuntimeTZ()
+	if err != nil {
+		logger.LogError("Unable to get local machine timezone", err)
 	}
 
 	logger.LogStop("CreateConfig")
+
 	return Config{
 		Core: CoreConfig{
 			MetalLBRange:             "",
 			AgePublicKey:             agePublicKey,
-			Timezone:                 time.Now().Location().String(),
+			Timezone:                 tzname,
 			WeaveGitOpsAdminPassword: "generate",
 		},
 		GitHub: GitHubConfig{
@@ -42,9 +49,9 @@ func CreateConfig() (Config, error) {
 			Email:  "",
 			APIKey: "",
 			Tunnel: CloudflareTunnel{
-				AccountTag:   cloudflaredOutput.AccountTag,
-				TunnelSecret: cloudflaredOutput.TunnelSecret,
-				TunnelID:     cloudflaredOutput.TunnelID,
+				AccountTag:   cloudflared.AccountTag,
+				TunnelSecret: cloudflared.TunnelSecret,
+				TunnelID:     cloudflared.TunnelID,
 			},
 		},
 		Ansible: AnsibleConfig{
@@ -64,10 +71,16 @@ func CreateConfig() (Config, error) {
 }
 
 func getCloudflareCreds() (*CloudflareTunnel, error) {
-	cloudflaredDir := os.ExpandEnv("~/.cloudflared")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		logger.LogError("Failed to retrieve home directory", err)
+		return nil, err
+	}
+
+	cloudflaredDir := os.ExpandEnv(homeDir + "/.cloudflared")
 	var cloudflareFile string
 
-	err := filepath.Walk(cloudflaredDir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(cloudflaredDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logger.LogError("Failed to access path "+path, err)
 			return err

@@ -37,15 +37,11 @@ func LogInit(d bool, f *os.File) {
 }
 
 func LogStart(functionName string) {
-	log.Info("*********************************************\n" +
-		"Started processing " + functionName + " at " + time.Now().Format(time.RFC3339) + "\n" +
-		"*********************************************\n")
+	log.Info("Started processing " + functionName + " at " + time.Now().Format(time.RFC3339))
 }
 
 func LogStop(functionName string) {
-	log.Info("*********************************************\n" +
-		"Finished  processing " + functionName + " at " + time.Now().Format(time.RFC3339) + "\n" +
-		"*********************************************\n")
+	log.Info("Finished processing " + functionName + " at " + time.Now().Format(time.RFC3339))
 }
 
 func GetLogger() *zap.SugaredLogger {

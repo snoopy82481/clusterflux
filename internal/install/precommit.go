@@ -12,7 +12,6 @@ func RunPrecommitInstall() error {
 
 	err := cmd.Run()
 	if err != nil {
-		logger.LogError("Failed to run pre-commit install --install-hooks", err)
 		return err
 	}
 	logger.LogStop("RunPrecommitInstall")

@@ -9,7 +9,6 @@ import (
 func CloudflaredLoginAndCreateTunnel() error {
 	logger.LogStart("CloudflaredLoginAndCreateTunnel")
 
-	// Run 'cloudflared tunnel login'
 	cmd := exec.Command("cloudflared", "tunnel", "login")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -18,7 +17,6 @@ func CloudflaredLoginAndCreateTunnel() error {
 	}
 	logger.LogInfo(string(output), "CloudflaredLoginAndCreateTunnel")
 
-	// Run 'cloudflared tunnel create k8s'
 	cmd = exec.Command("cloudflared", "tunnel", "create", "k8s")
 	output, err = cmd.CombinedOutput()
 	if err != nil {

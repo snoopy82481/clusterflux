@@ -1,33 +1,38 @@
 package install
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/snoopy82481/clusterflux/internal/logger"
 )
 
-// GetAgePublicKey function reads the age public key from keys.txt and returns it
 func GetAgePublicKey() (string, error) {
-	keysFile := os.ExpandEnv("~/.config/sops/age/keys.txt")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		logger.LogError("Failed to retrieve home directory", err)
+		return "", err
+	}
+
+	keysFile := filepath.Join(homeDir, ".config/sops/age/keys.txt")
 	data, err := os.ReadFile(keysFile)
 	if err != nil {
 		logger.LogError("Failed to read keys file", err)
-		return "", fmt.Errorf("failed to read keys file: %w", err)
+		return "", err
 	}
 
 	lines := strings.Split(string(data), "\n")
 	if len(lines) < 2 {
 		logger.LogWarn("Unexpected keys file format")
-		return "", fmt.Errorf("unexpected keys file format")
+		return "", err
 	}
 
 	parts := strings.Split(lines[1], ":")
 	if len(parts) < 2 {
 		logger.LogWarn("Unexpected keys file format")
-		return "", fmt.Errorf("unexpected keys file format")
+		return "", err
 	}
 
 	publicKey := strings.TrimSpace(parts[1])
@@ -39,8 +44,14 @@ func GetAgePublicKey() (string, error) {
 func SetupSopsAge() error {
 	logger.LogStart("SetupSopsAge")
 
-	sopsDir := os.ExpandEnv("~/.config/sops/age")
-	keysFile := os.ExpandEnv(sopsDir + "/keys.txt")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		logger.LogError("Failed to retrieve home directory", err)
+		return err
+	}
+
+	sopsDir := filepath.Join(homeDir, ".config/sops/age")
+	keysFile := filepath.Join(sopsDir, "/keys.txt")
 
 	if _, err := os.Stat(sopsDir); os.IsNotExist(err) {
 		logger.LogInfo("Creating sops directory...", "SetupSopsAge")
@@ -48,7 +59,7 @@ func SetupSopsAge() error {
 		err := os.MkdirAll(sopsDir, 0755)
 		if err != nil {
 			logger.LogError("Failed to create directory", err)
-			return fmt.Errorf("failed to create directory: %w", err)
+			return err
 		}
 	}
 
@@ -59,13 +70,8 @@ func SetupSopsAge() error {
 		err := cmd.Run()
 		if err != nil {
 			logger.LogError("Failed to run age-keygen", err)
-			return fmt.Errorf("failed to run age-keygen: %w", err)
+			return err
 		}
-	}
-
-	_, err := GetAgePublicKey()
-	if err != nil {
-		return fmt.Errorf("failed to get public key: %w", err)
 	}
 
 	logger.LogStop("SetupSopsAge")

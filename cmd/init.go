@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
+	"path/filepath"
 
 	"github.com/snoopy82481/clusterflux/internal/config"
 	"github.com/snoopy82481/clusterflux/internal/install"
@@ -43,20 +43,11 @@ var initCmd = &cobra.Command{
 				log.Panicf("Unable to Create logfile. %v", err)
 				return
 			}
-			log.Printf("Thumbs up!")
-
-			time.Sleep(3 * time.Second)
 
 			defer file.Close()
 		}
 
-		// If the file exists but there's another error, handle it
-		if err != nil {
-			log.Panicf("Failed to access logfile.log. %v", err)
-			return
-		}
-
-		logfile, err := os.OpenFile("logfile.log", os.O_RDWR|os.O_APPEND, 0666)
+		logfile, err := os.OpenFile("logfile.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			return
 		}
@@ -98,24 +89,31 @@ var initCmd = &cobra.Command{
 
 		logger.LogSuccess("Pre-Commit installed successfully")
 
-		err = install.SetupSopsAge()
-		if err != nil {
-			logger.LogError("Failed to setup Age", err)
-			return
-		}
-
 		publicKey, err := install.GetAgePublicKey()
 		if err != nil {
-			logger.LogError("Failed to get Age public key", err)
+			err = install.SetupSopsAge()
+			if err != nil {
+				logger.LogError("Failed to setup Age", err)
+				return
+			}
 			return
 		}
 
 		logger.LogInfo("Public Key: "+publicKey, "init")
 
-		err = install.CloudflaredLoginAndCreateTunnel()
+		homeDir, err := os.UserHomeDir()
 		if err != nil {
-			logger.LogError("Failed to setup Cloudflared tunnel", err)
+			logger.LogError("Failed to retrieve home directory", err)
 			return
+		}
+
+		jsonFilePath := filepath.Join(homeDir, ".cloudflared", "cert.pem")
+		if _, err := os.Stat(jsonFilePath); err != nil {
+			err = install.CloudflaredLoginAndCreateTunnel()
+			if err != nil {
+				logger.LogError("Failed to setup Cloudflared tunnel", err)
+				return
+			}
 		}
 
 		logger.LogSuccess("Cloudflared tunnel setup.")

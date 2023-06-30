@@ -11,24 +11,15 @@ import (
 
 func VerifyAndInstallPackages(packages []string) error {
 	for _, pkg := range packages {
-		err := checkAndInstallPackage(pkg)
-		if err != nil {
-			logger.LogError("Failed to install package", err)
-			return err
-		}
-		logger.LogSuccess("Successfully installed package " + pkg)
-	}
-	return nil
-}
-
-func checkAndInstallPackage(pkg string) error {
-	if checkIfPackageIsInstalled(pkg) {
-		logger.LogInfo(pkg+" is already installed", "checkAndInstallPackage")
-	} else {
-		err := installPackage(pkg)
-		if err != nil {
-			logger.LogError("Failed to install package "+pkg, err)
-			return err
+		if !checkIfPackageIsInstalled(pkg) {
+			err := installPackage(pkg)
+			if err != nil {
+				logger.LogError("Failed to install package "+pkg, err)
+			} else {
+				logger.LogSuccess("Successfully installed package " + pkg)
+			}
+		} else {
+			logger.LogSuccess("Package " + pkg + " is already installed")
 		}
 	}
 	return nil
@@ -45,10 +36,9 @@ func checkIfPackageIsInstalled(pkg string) bool {
 
 func installPackage(pkg string) error {
 	cmd := exec.Command("brew", "install", pkg)
-	output, err := cmd.CombinedOutput()
+	err := cmd.Run()
 	if err != nil {
-		logger.LogError("Failed to install package "+pkg+": "+string(output), err)
-		return fmt.Errorf("Failed to install package %w", err)
+		return err
 	}
 	return nil
 }
