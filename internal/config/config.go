@@ -29,25 +29,27 @@ func CreateConfig() (Config, error) {
 	tzname, err := tzlocal.RuntimeTZ()
 	if err != nil {
 		logger.LogError("Unable to get local machine timezone", err)
+		return Config{}, err
 	}
 
 	logger.LogStop("CreateConfig")
 
 	return Config{
-		Core: CoreConfig{
-			MetalLBRange:             "",
-			AgePublicKey:             agePublicKey,
-			Timezone:                 tzname,
-			WeaveGitOpsAdminPassword: "generate",
+		Email:                    "",
+		Timezone:                 tzname,
+		AgePublicKey:             agePublicKey,
+		WeaveGitOpsAdminPassword: "generate",
+		Network: Network{
+			LoadBalancerRange: "",
 		},
 		GitHub: GitHubConfig{
+			Public:            true,
 			URL:               "",
 			FluxWebhookSecret: "generate",
 		},
 		Cloudflare: CloudflareConfig{
-			Domain: "",
-			Email:  "",
-			APIKey: "",
+			Domain:   "",
+			APIToken: "",
 			Tunnel: CloudflareTunnel{
 				AccountTag:   cloudflared.AccountTag,
 				TunnelSecret: cloudflared.TunnelSecret,
@@ -55,6 +57,7 @@ func CreateConfig() (Config, error) {
 			},
 		},
 		Ansible: AnsibleConfig{
+			Enabled:                   true,
 			ControlNodeHostnamePrefix: "control",
 			NodeHostnamePrefix:        "node",
 			Hosts: []AnsibleHost{

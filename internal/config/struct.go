@@ -1,29 +1,30 @@
 package config
 
 type Config struct {
-	Core       CoreConfig       `yaml:"core"`
-	GitHub     GitHubConfig     `yaml:"github"`
-	Cloudflare CloudflareConfig `yaml:"cloudflare"`
-	Ansible    AnsibleConfig    `yaml:"ansible"`
+	Email                    string           `yaml:"email" validate:"required|email"`
+	Timezone                 string           `yaml:"timezone" validate:"required"`
+	AgePublicKey             string           `yaml:"agePublicKey" validate:"required"`
+	WeaveGitOpsAdminPassword string           `yaml:"weaveGitOpsAdminPassword" validate:"required|password"`
+	Network                  Network          `yaml:"network" validate:"required"`
+	GitHub                   GitHubConfig     `yaml:"github"`
+	Cloudflare               CloudflareConfig `yaml:"cloudflare"`
+	Ansible                  AnsibleConfig    `yaml:"ansible"`
 }
 
-type CoreConfig struct {
-	MetalLBRange             string `yaml:"metalLBRange" validate:"required|ipRange"`
-	AgePublicKey             string `yaml:"agePublicKey" validate:"required"`
-	Timezone                 string `yaml:"timezone" validate:"required"`
-	WeaveGitOpsAdminPassword string `yaml:"weaveGitOpsAdminPassword" validate:"required|password"`
+type Network struct {
+	LoadBalancerRange string `yaml:"loadBalancerRange" validate:"required"`
 }
 
 type GitHubConfig struct {
+	Public            bool   `yaml:"public" validate:"required|bool"`
 	URL               string `yaml:"url" validate:"required|url"`
 	FluxWebhookSecret string `yaml:"fluxWebhookSecret" validate:"required"`
 }
 
 type CloudflareConfig struct {
-	Domain string           `yaml:"domain" validate:"required|url"`
-	Email  string           `yaml:"email" validate:"required|email"`
-	APIKey string           `yaml:"apiKey" validate:"required"`
-	Tunnel CloudflareTunnel `yaml:"tunnel"`
+	Domain   string           `yaml:"domain" validate:"required|url"`
+	APIToken string           `yaml:"apiToken" validate:"required"`
+	Tunnel   CloudflareTunnel `yaml:"tunnel"`
 }
 
 type CloudflareTunnel struct {
@@ -33,15 +34,16 @@ type CloudflareTunnel struct {
 }
 
 type AnsibleConfig struct {
-	ControlNodeHostnamePrefix string        `yaml:"controlNodeHostnamePrefix" validate:"required"`
-	NodeHostnamePrefix        string        `yaml:"nodeHostnamePrefix" validate:"required"`
+	Enabled                   bool          `yaml:"enable" validate:"required|bool"`
+	ControlNodeHostnamePrefix string        `yaml:"controlNodeHostnamePrefix" validate:"requiredif:Enabled,true"`
+	NodeHostnamePrefix        string        `yaml:"nodeHostnamePrefix" validate:"requiredif:Enabled,true"`
 	Hosts                     []AnsibleHost `yaml:"hosts"`
 }
 
 type AnsibleHost struct {
-	IPAddress    string `yaml:"ipAddress" validate:"required|ip"`
-	SSHUsername  string `yaml:"sshUsername" validate:"required"`
-	SudoPassword string `yaml:"sudoPassword" validate:"required"`
-	ControlNode  bool   `yaml:"controlNode" validate:"required|bool"`
+	IPAddress    string `yaml:"ipAddress" validate:"requiredif:Enabled,true|ip"`
+	SSHUsername  string `yaml:"sshUsername" validate:"requiredif:Enabled,true"`
+	SudoPassword string `yaml:"sudoPassword" validate:"requiredif:Enabled,true"`
+	ControlNode  bool   `yaml:"controlNode" validate:"requiredif:Enabled,true|bool"`
 	Hostname     string `yaml:"hostname"`
 }
