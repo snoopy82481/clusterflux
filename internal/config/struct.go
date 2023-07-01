@@ -12,7 +12,7 @@ type Config struct {
 }
 
 type Network struct {
-	LoadBalancerRange string `yaml:"loadBalancerRange" validate:"required"`
+	LoadBalancerRange string `yaml:"loadBalancerRange" validate:"required|loadBalancerRange"`
 }
 
 type GitHubConfig struct {
@@ -37,7 +37,7 @@ type AnsibleConfig struct {
 	Enabled                   bool          `yaml:"enable" validate:"required|bool"`
 	ControlNodeHostnamePrefix string        `yaml:"controlNodeHostnamePrefix" validate:"requiredif:Enabled,true"`
 	NodeHostnamePrefix        string        `yaml:"nodeHostnamePrefix" validate:"requiredif:Enabled,true"`
-	Hosts                     []AnsibleHost `yaml:"hosts"`
+	Hosts                     []AnsibleHost `yaml:"hosts" validate:"ansibleIPNotInLoadBalancerRange"`
 }
 
 type AnsibleHost struct {
