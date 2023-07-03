@@ -35,17 +35,30 @@ func CreateConfig() (Config, error) {
 	logger.LogStop("CreateConfig")
 
 	return Config{
-		Email:                    "",
-		Timezone:                 tzname,
-		AgePublicKey:             agePublicKey,
-		WeaveGitOpsAdminPassword: "generate",
+		Email:        "",
+		Timezone:     tzname,
+		AgePublicKey: agePublicKey,
+		Apps: Apps{
+			WeaveGitOps: WeaveGitOps{
+				AdminPassword: "generate",
+			},
+			Grafana: Grafana{
+				AdminPassword: "generate",
+			},
+		},
 		Network: Network{
-			LoadBalancerRange: "",
+			ClusterCidr:    "10.42.0.0/16",
+			ServiceCidr:    "10.43.0.0/16",
+			K8sGatewayAddr: "",
+			IngressAddr:    "",
+			KubeVIPAddr:    "",
 		},
 		GitHub: GitHubConfig{
-			Public:            true,
-			URL:               "",
-			FluxWebhookSecret: "generate",
+			Public: true,
+			URL:    "",
+			FluxWebhook: FluxWebhook{
+				Secret: "generate",
+			},
 		},
 		Cloudflare: CloudflareConfig{
 			Domain:   "",

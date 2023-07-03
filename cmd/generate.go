@@ -72,6 +72,10 @@ to quickly create a Cobra application.`,
 			return
 		}
 
+		if err := validation.ValidateAnsibleHosts(config); err != nil {
+			logger.LogError("Unable to validate Ansible Hosts", err)
+			return
+		}
 	},
 }
 
